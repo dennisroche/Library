@@ -1,0 +1,38 @@
+{
+  "Id": "ActionTemplates-98",
+  "Name": "IIS AppPool - Enable 32-bit Mode",
+  "Description": "Configures an IIS Application Pool",
+  "ActionType": "Octopus.Script",
+  "Version": 6,
+  "Properties": {
+    "Octopus.Action.Script.ScriptBody": "#Load Web Admin DLL\n[System.Reflection.Assembly]::LoadFrom( \"C:\\windows\\system32\\inetsrv\\Microsoft.Web.Administration.dll\" ) | Out-Null\nAdd-PSSnapin WebAdministration -ErrorAction SilentlyContinue\nImport-Module WebAdministration -ErrorAction SilentlyContinue\n\n$appPoolName = $OctopusParameters['AppPoolName']\n$appPoolEnable32BitAppOnWin64 = [boolean]::Parse($OctopusParameters['AppPoolEnable32BitAppOnWin64'])\n\nWrite-Output \"AppPoolName: $appPoolName\"\nWrite-Output \"AppPoolEnable32BitAppOnWin64: $appPoolEnable32BitAppOnWin64\"\n\n$prevValue = (Get-ItemProperty IIS:\\apppools\\$appPoolName -Name \"enable32BitAppOnWin64\").Value\n\nif ($prevValue -ne $appPoolEnable32BitAppOnWin64) {\n    Set-ItemProperty IIS:\\apppools\\$appPoolName -name \"enable32BitAppOnWin64\" -Value $appPoolEnable32BitAppOnWin64\n    $newValue = (Get-ItemProperty IIS:\\apppools\\$appPoolName -Name \"enable32BitAppOnWin64\").Value\n    Write-Output \"IIS:\\apppools\\$appPoolName Changed 'enable32BitAppOnWin64' from $prevValue to $newValue.\"\n} else {\n    Write-Output \"IIS:\\apppools\\$appPoolName 'enable32BitAppOnWin64' is already $appPoolEnable32BitAppOnWin64 - Nothing changed.\"\n}\n"
+  },
+  "SensitiveProperties": {},
+  "Parameters": [
+    {
+      "Name": "AppPoolName",
+      "Label": "Application pool name",
+      "HelpText": "The name of the application pool that the application will run under.",
+      "DefaultValue": null,
+      "DisplaySettings": {
+        "Octopus.ControlType": "SingleLineText"
+      }
+    },
+    {
+      "Name": "AppPoolEnable32BitAppOnWin64",
+      "Label": "Enable 32-Bit Applications",
+      "HelpText": "Allows the application pool to run 32-bit applications when running on 64-bit windows.",
+      "DefaultValue": null,
+      "DisplaySettings": {
+        "Octopus.ControlType": "Checkbox"
+      }
+    }
+  ],
+  "LastModifiedOn": "2014-12-18T02:56:06.580+00:00",
+  "LastModifiedBy": "dennis.roche",
+  "$Meta": {
+    "ExportedAt": "2014-12-18T07:10:56.078Z",
+    "OctopusVersion": "2.5.10.567",
+    "Type": "ActionTemplate"
+  }
+}
